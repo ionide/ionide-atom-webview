@@ -36,24 +36,46 @@ module Dynamic =
 
 
 module WebViewHandler =
-    let location = "packages/FAKE/tools/FAKE.exe"
-    let port = "8083"
+    let mutable linuxPrefix = ""
+    let mutable command = "packages/FAKE/tools/FAKE.exe"
+    let mutable host = ""
+    let mutable port = 8083
+    let mutable script = ""
+    let mutable build = ""
+    let mutable startString = ""
     let mutable private webview : IPanel option = None
 
 
     let parseResponse o =
         if JS.isDefined o && o <> null then
             let str =  o.ToString ()
-            if str.Contains "listener started" then
-                //let p = NewWebView "http://localhost:8888"
-                Globals.atom.workspace._open("ionide-webpreview://localhost:" + port, {split = "right"})._done((fun ed ->
+            if str.Contains startString then
+                Globals.atom.workspace._open("ionide-webpreview://" + host + ":" + (string port), {split = "right"})._done((fun ed ->
                     webview <- Some ed
                 ) |> unbox<Function>)
             Globals.console.log <| o.ToString ()
         ()
 
+    let loadSettings () =
+        linuxPrefix <- Settings.loadOrDefault (fun s -> s.WebPreview.linuxPrefix) "mono"
+        command <- Settings.loadOrDefault (fun s -> s.WebPreview.command) "packages/FAKE/tools/FAKE.exe"
+        host <- Settings.loadOrDefault (fun s -> s.WebPreview.host) "localhost"
+        port <- Settings.loadOrDefault (fun s -> s.WebPreview.port) 8888
+        script <- Settings.loadOrDefault (fun s -> s.WebPreview.script) "build.fsx"
+        build <- Settings.loadOrDefault (fun s -> s.WebPreview.build) "Serve"
+        startString <- Settings.loadOrDefault (fun s -> s.WebPreview.startString) "listener started"
+        ()
+
     let showWebView () =
-        let cp = Process.spawn location "mono" ("build.fsx AutoStart port=" + port)
+        loadSettings ()
+        let cp =
+            if Process.isWin () then
+                let args = sprintf "%s %s port=%d" script build port
+                Process.spawnSame command args
+            else
+                let args = sprintf "%s %s %s port=%d" command script build port
+                Process.spawnSame linuxPrefix args
+
         cp.stdout.on ("readable", unbox<Function> (cp.stdout.read >> parseResponse )) |> ignore
         ()
 

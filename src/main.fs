@@ -60,7 +60,7 @@ let translateModules fileName =
     let functionArray =
       Expr.NewArray(typeof<obj>, exportCtor::[ for f in exportFunctions -> Expr.Coerce(f, typeof<obj>)])
 
-    let coreJS = Compiler.Compile(functionArray)
+    let coreJS = Compiler.Compile(functionArray) 
 
     // Now we just wrap the generated JavaScript into 'wrappedFunScript' function
     // Then we call the function and create a module export with all the public methods
@@ -68,6 +68,8 @@ let translateModules fileName =
     let moduleJS =
       [ yield "var CompositeDisposable = require('atom').CompositeDisposable;"
         yield "var child_process = require('child_process');"
+        yield "var toml = require('toml');"
+        yield "var fs = require('fs');"
         yield "window.$ = require('jquery');"
         yield "var atomSpaceView = require('atom-space-pen-views');"
         yield "var WebView = require('./WebView-View')"
