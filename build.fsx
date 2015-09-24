@@ -94,7 +94,7 @@ Target "RunScript" (fun () ->
 )
 
 Target "InstallDependencies" (fun _ ->
-    run "install" "release"
+    run apmTool "install" "release" 
 )
 
 Target "TagDevelopBranch" (fun _ ->
