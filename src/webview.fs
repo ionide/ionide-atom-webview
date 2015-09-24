@@ -22,6 +22,8 @@ module Bindings =
     type IWorkspace with
         [<FunScript.JSEmitInline("({0}.addOpener({1}))")>]
         member __.addOpener(cb: string -> obj) : unit = failwith "JS"
+        [<FunScript.JSEmitInline("({0}.paneForItem({1}))")>]
+        member __.paneForItem(o : obj) : obj = failwith "JS"
 
 
 [<ReflectedDefinition>]
@@ -43,16 +45,18 @@ module WebViewHandler =
     let mutable script = ""
     let mutable build = ""
     let mutable startString = ""
+    let mutable parameters = [||]
+    let mutable startingPage = ""
     let mutable private webview : IPanel option = None
+    let mutable fakeProcess : ChildProcess Option = None
+
 
 
     let parseResponse o =
         if JS.isDefined o && o <> null then
             let str =  o.ToString ()
             if str.Contains startString then
-                Globals.atom.workspace._open("ionide-webpreview://" + host + ":" + (string port), {split = "right"})._done((fun ed ->
-                    webview <- Some ed
-                ) |> unbox<Function>)
+                webview |> Option.iter (fun w -> w?openPreview(host + ":" + (string port) + "/" + startingPage ))
             Globals.console.log <| o.ToString ()
         ()
 
@@ -64,22 +68,46 @@ module WebViewHandler =
         script <- Settings.loadOrDefault (fun s -> s.WebPreview.script) "build.fsx"
         build <- Settings.loadOrDefault (fun s -> s.WebPreview.build) "Serve"
         startString <- Settings.loadOrDefault (fun s -> s.WebPreview.startString) "listener started"
+        parameters <- Settings.loadOrDefault (fun s -> s.WebPreview.parameters) [||]
+        startingPage <- Settings.loadOrDefault (fun s -> s.WebPreview.startingPage) ""
         ()
 
+    let close () =
+        fakeProcess |> Option.iter (fun p ->
+            p.kill ()
+            fakeProcess <- None)
+        webview |> Option.iter (fun ed ->
+            let o = Globals.atom.workspace.paneForItem(ed)
+            o?destroy()
+            webview <- None
+            )
+
     let showWebView () =
+        if fakeProcess.IsSome then close ()
         loadSettings ()
+        Globals.atom.workspace._open("ionide-webpreview://" + host + ":" + (string port), {split = "right"})._done((fun ed ->
+            webview <- Some ed
+        ) |> unbox<Function>)
         let cp =
             if Process.isWin () then
                 let args = sprintf "%s %s port=%d" script build port
-                Process.spawnSame command args
+                let args' = parameters |> Array.fold (fun acc e -> acc + " " + e) args
+
+                Process.spawnSame command args'
             else
                 let args = sprintf "%s %s %s port=%d" command script build port
-                Process.spawnSame linuxPrefix args
+                let args' = parameters |> Array.fold (fun acc e -> acc + " " + e) args
+                Process.spawnSame linuxPrefix args'
 
         cp.stdout.on ("readable", unbox<Function> (cp.stdout.read >> parseResponse )) |> ignore
+        cp.stderr.on ("readable", unbox<Function> (cp.stdout.read >> (fun o -> if JS.isDefined o && o <> null then Globals.console.error  <| o.ToString ()) )) |> ignore
+        fakeProcess <- Some cp
         ()
 
-
+    let refresh () =
+        let wv = jq ".webview"
+        wv.attr ("src", wv.attr("src") ) |> ignore
+        ()
 
     let opener (uri' : string) =
         try
@@ -99,7 +127,10 @@ type WebView() =
     member x.activate(state:obj) =
         Globals.atom.workspace.addOpener WebViewHandler.opener
         let s = Globals.atom.commands.add ("atom-workspace", "Ionide: Show Web View", WebViewHandler.showWebView |> unbox<Function>)
+        let s2 = Globals.atom.commands.add ("atom-workspace", "Ionide: Refresh Wev View", WebViewHandler.refresh |> unbox<Function>)
+        let s3 = Globals.atom.commands.add ("atom-workspace", "Ionide: Close Web View", WebViewHandler.close |> unbox<Function>)
         subscribers.Add s
+        subscribers.Add s2
         ()
 
     member x.deactivate() =

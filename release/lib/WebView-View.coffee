@@ -2,12 +2,21 @@
 
 module.exports =
 class WebView extends ScrollView
-  @content: (url) ->
-      @div class: 'native-key-bindings', tabindex: -1, =>
-        @iframe class: 'webview', src: ("http://" + url)
+  @content: ->
+      @div class: 'native-key-bindings', tabindex: -1
+
+
 
   constructor: (@editorId, @filePath) ->
     super
 
-  getTitle: () ->
+  getTitle: ->
       "Ionide: Web Preview"
+
+  attached: ->
+    @html $$$ ->
+      @div class: 'loader'
+
+  openPreview: (url) =>
+    @html $$$ ->
+       @iframe class: 'webview', src: ("http://" + url)
