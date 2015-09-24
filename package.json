@@ -1,7 +1,7 @@
 {
   "name": "ionide-webview",
   "main": "./lib/webview",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "WebPreview in Atom editor",
   "repository": "https://github.com/Ionide/ionide-webview",
   "license": "MIT",
