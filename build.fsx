@@ -41,7 +41,28 @@ let releaseNotesData =
 
 let release = List.head releaseNotesData
 
-let apmTool = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) </> "atom" </> "bin" </> "apm.cmd"
+let run cmd args dir =
+    if execProcess( fun info ->
+        info.FileName <- cmd
+        if not( String.IsNullOrWhiteSpace dir) then
+            info.WorkingDirectory <- dir
+        info.Arguments <- args
+    ) System.TimeSpan.MaxValue = false then
+        traceError <| sprintf "Error while running '%s' with args: %s" cmd args
+
+let apmTool =
+    #if MONO
+        "apm"
+    #else
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) </> "atom" </> "bin" </> "apm.cmd"
+    #endif
+
+let atomTool =
+    #if MONO
+        "atom"
+    #else
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) </> "atom" </> "bin" </> "atom.cmd"
+    #endif
 
 // --------------------------------------------------------------------------------------
 // Build the Generator project and run it
@@ -58,29 +79,22 @@ Target "BuildGenerator" (fun () ->
 )
 
 Target "RunGenerator" (fun () ->
-
         (TimeSpan.FromMinutes 5.0)
         |> ProcessHelper.ExecProcess (fun p ->
             p.FileName <- __SOURCE_DIRECTORY__ @@ "src" @@ "bin" @@ "Debug" @@ "Ionide.WebView.exe" )
         |> ignore
 )
-#if MONO
-#else
+
 Target "RunScript" (fun () ->
-    Ionide.WebView.Generator.translateModules "../release/lib/WebView.js"
+    #if MONO
+        ()
+    #else
+        Ionide.WebView.Generator.translateModules "../release/lib/WebView.js"
+    #endif
 )
-#endif
 
 Target "InstallDependencies" (fun _ ->
-    let args = "install"
-
-    let srcDir = "release"
-    let result =
-        ExecProcess (fun info ->
-            info.FileName <- apmTool
-            info.WorkingDirectory <- srcDir
-            info.Arguments <- args) System.TimeSpan.MaxValue
-    if result <> 0 then failwithf "Error during running apm with %s" args
+    run apmTool "install" "release" 
 )
 
 Target "TagDevelopBranch" (fun _ ->
@@ -92,6 +106,14 @@ Target "TagDevelopBranch" (fun _ ->
     Branches.tag "" tagName
     Branches.pushTag "" "origin" tagName
 )
+
+Target "TryPackage"( fun _ ->
+    killProcess "atom"
+    run apmTool "uninstall ionide-webview" ""
+    run apmTool "link" "release"
+    run atomTool __SOURCE_DIRECTORY__ ""
+)
+
 
 
 Target "PushToMaster" (fun _ ->
@@ -116,12 +138,7 @@ Target "PushToMaster" (fun _ ->
 
 Target "Release" (fun _ ->
     let args = sprintf "publish %s" release.NugetVersion
-    let result =
-        ExecProcess (fun info ->
-            info.FileName <- apmTool
-            info.WorkingDirectory <- tempReleaseDir
-            info.Arguments <- args) System.TimeSpan.MaxValue
-    if result <> 0 then failwithf "Error during running apm with %s" args
+    run apmTool args tempReleaseDir
     DeleteDir "temp/release"
 )
 
