@@ -73,14 +73,17 @@ module WebViewHandler =
         ()
 
     let close () =
-        fakeProcess |> Option.iter (fun p ->
-            p.kill ()
-            fakeProcess <- None)
-        webview |> Option.iter (fun ed ->
-            let o = Globals.atom.workspace.paneForItem(ed)
-            o?destroy()
-            webview <- None
-            )
+        try
+            fakeProcess |> Option.iter (fun p ->
+                p.kill ()
+                fakeProcess <- None)
+            webview |> Option.iter (fun ed ->
+                let o = Globals.atom.workspace.paneForItem(ed)
+                o?destroy()
+                webview <- None
+                )
+        with
+        | _ -> ()  
 
     let showWebView () =
         if fakeProcess.IsSome then close ()
