@@ -1,6 +1,44 @@
 # Ionide-Webview
 
 It's part of [Ionide](http://ionide.io) plugin suite.
+In-editor preview of web applications.
+
+## Configuration
+
+`ionide-webview` allows the user to override the default conventions used to run and preview web applications. To do so You need to create an `.ionide` file in the root folder of Your project opened by Atom. The configuration file uses the [TOML](https://github.com/toml-lang/toml) language.
+
+Here is the default configuration values used if the `.ionide` file doesn't exist or some entry is missing:
+
+```TOML
+[WebPreview]
+linuxPrefix = "mono"
+command = "packages/FAKE/tools/FAKE.exe"
+host = "localhost"
+port = 8888
+script = "build.fsx"
+build = "Serve"
+startString = "listener started"
+parameters = []
+startingPage = ""
+```
+
+* linuxPrefix - command used as prefix on Linux / Mac - usually `sh` or `mono`
+
+* command - path to `FAKE.exe`
+
+* host - address of webpage displayed in WebPreview - usually `localhost`
+
+* port - port of webpage displayed in WebPreview (also passed to FAKE as environmental variable)
+
+* script - FAKE build script passed to FAKE - usually `build.fsx`
+
+* build - FAKE build target executed to start WebPreview
+
+* startString - string which needs to be printed out in standard I/O to let know WebPreview to display webpage
+
+* parameters - list of parameters passed to FAKE.exe
+
+* startingPage - webpage displayed in WebPreview - usually ` ` or `index.html`
 
 
 ## Build
