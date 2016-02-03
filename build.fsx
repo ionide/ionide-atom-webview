@@ -160,6 +160,9 @@ Target "Default" DoNothing
 #endif
 
 "InstallDependencies"
+    ==> "TryPackage"
+
+"InstallDependencies"
   ==> "Default"
   ==> "TagDevelopBranch"
   ==> "PushToMaster"
