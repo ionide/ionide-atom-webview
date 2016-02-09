@@ -1,18 +1,40 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Ionide.WebView", "src\Ionide.WebView.fsproj", "{D1081029-2369-4DAA-9F33-2353C5C9ED02}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{67EDE4A4-AC6E-407A-987D-A4B6334C29F2}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		build.cmd = build.cmd
 		build.fsx = build.fsx
-		src\paket\package.json = src\fake\package.json
+		build.sh = build.sh
+		LICENSE = LICENSE
 		paket.dependencies = paket.dependencies
-		paket.lock = paket.lock
 		README.md = README.md
 		RELEASE_NOTES.md = RELEASE_NOTES.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "release", "release", "{1E7C4F68-B42B-4EEE-81AC-5C71941CC0DF}"
+	ProjectSection(SolutionItems) = preProject
+		release\.gitignore = release\.gitignore
+		release\package.json = release\package.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "styles", "styles", "{FA6E152C-793A-48D5-B155-C0EE1AA2B8A4}"
+	ProjectSection(SolutionItems) = preProject
+		release\styles\core.less = release\styles\core.less
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{9B969A54-7577-4012-BE25-A5B1087E6C29}"
+	ProjectSection(SolutionItems) = preProject
+		lib\FunScript.TypeScript.Binding.atom.dll = lib\FunScript.TypeScript.Binding.atom.dll
+		lib\FunScript.TypeScript.Binding.jquery.dll = lib\FunScript.TypeScript.Binding.jquery.dll
+		lib\FunScript.TypeScript.Binding.lib.dll = lib\FunScript.TypeScript.Binding.lib.dll
+		lib\FunScript.TypeScript.Binding.node.dll = lib\FunScript.TypeScript.Binding.node.dll
+		lib\Ionide.Helpers.dll = lib\Ionide.Helpers.dll
 	EndProjectSection
 EndProject
 Global
@@ -28,5 +50,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FA6E152C-793A-48D5-B155-C0EE1AA2B8A4} = {1E7C4F68-B42B-4EEE-81AC-5C71941CC0DF}
+		{9B969A54-7577-4012-BE25-A5B1087E6C29} = {1E7C4F68-B42B-4EEE-81AC-5C71941CC0DF}
 	EndGlobalSection
 EndGlobal
