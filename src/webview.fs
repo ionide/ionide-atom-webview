@@ -83,7 +83,7 @@ module WebViewHandler =
                 webview <- None
                 )
         with
-        | _ -> ()  
+        | _ -> ()
 
     let showWebView () =
         if fakeProcess.IsSome then close ()
@@ -130,7 +130,7 @@ type WebView() =
     member x.activate(state:obj) =
         Globals.atom.workspace.addOpener WebViewHandler.opener
         let s = Globals.atom.commands.add ("atom-workspace", "Ionide: Show Web View", WebViewHandler.showWebView |> unbox<Function>)
-        let s2 = Globals.atom.commands.add ("atom-workspace", "Ionide: Refresh Wev View", WebViewHandler.refresh |> unbox<Function>)
+        let s2 = Globals.atom.commands.add ("atom-workspace", "Ionide: Refresh Web View", WebViewHandler.refresh |> unbox<Function>)
         let s3 = Globals.atom.commands.add ("atom-workspace", "Ionide: Close Web View", WebViewHandler.close |> unbox<Function>)
         subscribers.Add s
         subscribers.Add s2
